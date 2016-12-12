@@ -67,8 +67,8 @@
 			<td valign="top">
 				<h1>TURN <span id="turnn"></span></h1> <button onClick="ct();" id=nextButton>Next turn</button> <br/> <span id=turnInfo>its noones turn</span> <br/> <span id=turnPhase>Phase:none</span>
 				<hr/>
-				<div id=turnData></div> <button onClick="cont();">continue</button
-      </td>
+				<div id=turnData></div> <button onClick="cont();">continue</button>
+      			</td>
       <td valign="top">
         <h1>ADVANCED</h1>
         <button onClick="addBots();">add AI's</button> <input type=number value=1 id=botn class="short"></input> disasters:<select id="disasters" value=0>
@@ -152,7 +152,7 @@
 	}
 	player.prototype.show = function() {
         if(turn===0){
-            document.getElementById("graphdat").innerHTML+=this.people+"\t"+Game_Age+"<br/>";
+            //document.getElementById("graphdat").innerHTML+=this.people+"\t"+Game_Age+"<br/>";
         }
 		this.DOM.innerHTML = "HIA";
 		this.DOM.innerHTML = this.name + "<hr/>";
