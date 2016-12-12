@@ -1,0 +1,308 @@
+<!doctype html>
+<html>
+
+<head>
+	<title>W.O.P.</title>
+	<style id="jsbin-css">
+	html,
+	body,
+	div,
+	tr,
+	td {
+		border: 1px solid black;
+		text-align: top-middle;
+	}
+	
+	tr,
+	td {
+		text-align: left;
+	}
+	
+	td {
+		width: 50%;
+	}
+	
+	tr {
+		width: 100%;
+	}
+	
+	h1 {
+		text-align: middle;
+	}
+	
+	.small {
+		width: 3em;
+	}
+	
+	.blue {
+		color: blue;
+	}
+	
+	.red {
+		color: red;
+	}
+	
+	.player {
+		text-align: left;
+	}
+	
+	h1,
+	h2,
+	h3,
+	h4,
+	h5,
+	h6 {
+		padding: 0em;
+	}
+	</style>
+</head>
+
+<body>
+	<table>
+		<tr>
+			<td valign="top">
+				<h1>PLAYERS</h1> <button onClick="addPlayer();">add player</button>
+				<div id=players></div>
+			</td>
+			<td valign="top">
+				<h1>TURN <span id="turnn"></span></h1> <button onClick="ct();" id=nextButton>Next turn</button> <br/> <span id=turnInfo>its noones turn</span> <br/> <span id=turnPhase>Phase:none</span>
+				<hr/>
+				<div id=turnData></div> <button onClick="cont();">continue</button
+      </td>
+      <td valign="top">
+        <h1>ADVANCED</h1>
+        <button onClick="addBots();">add AI's</button> <input type=number value=1 id=botn class="short"></input> disasters:<select id="disasters" value=0>
+        <option value=0>YES</option>
+        <option value=1>NO</option>
+        </select> <br/> auto Population:<select id="popRecalc" value=0>
+        <option value=0>YES</option>
+        <option value=1>NO</option>
+        </select> auto run AI:<select id="autoAI" value=0>
+        <option value=0>YES</option>
+        <option value=1>NO</option>
+        </select>
+        removeDeadPlayers:<select id="rdp" value=0>
+        <option value=0>YES</option>
+        <option value=1>NO</option>
+        </select>
+        </select> resourceRate: <input id=resourcerate class="small" type=number min=0 max=999999 value=3></input>
+				<hr/>
+				<h3>RESOURCES</h3> wood:<input type=number value=10 class="small" id=wood></input> <br/> metal: <input type=number value=10 class="small" id=metal></input> <br/> food: <input type=number value=1 class="small" id=food></input>
+			</td>
+		</tr>
+	</table>
+    <div id=graphdat></div>
+	<script>
+    var Game_Age = 1;
+	var players = [];
+	var contin = 0;
+	var turn = 0;
+	var pn = 0;
+	var dis = 0;
+	var dism = 0;
+    var gained = 0;
+    
+	function inp(label, type, val) {
+		var s = document.createElement("span");
+		s.append(label);
+		var u = document.createElement("input");
+		u.setAttribute("value", val);
+		u.setAttribute("type", type);
+		if(type === "number") u.setAttribute("class", "small");
+		s.appendChild(u);
+		return s;
+	}
+
+	function d(n) {
+		n = n || 3;
+		return Math.ceil(Math.random() * n);
+	}
+    
+	function player(name, people, ta, AI) {
+		this.name = name || "Player " + pn;
+		if(AI) this.name = "[<span class=\"blue\"><strong>AI</strong></span>] " + this.name;
+		this.people = people || 10;
+		this.tech = ta;
+		this.AI = AI || false;
+		this.metal = document.getElementById("metal").value;
+		this.wood = document.getElementById("wood").value;
+		this.food = document.getElementById("food").value * people;
+		this.metal = Number(this.metal);
+		this.wood = Number(this.wood);
+		this.food = Number(this.food);
+		this.tasks = {};
+		this.state = "alive";
+		this.cost = {};
+		this.cost.wood = inp("CC wood:", "number", 0);
+		this.cost.metal = inp("CC metal:", "number", 0);
+		var u = document.createElement("DIV");
+		var t = document.createElement("DIV");
+		t.setAttribute("class", "player");
+		u.setAttribute("class", "player");
+		t.appendChild(u);
+		if(!this.AI) {
+			t.appendChild(this.cost.wood);
+			t.appendChild(document.createElement("BR"));
+			t.appendChild(this.cost.metal);
+		}
+		document.getElementById("players").appendChild(t);
+		this.DOM = u;
+		this.container = t;
+		this.show();
+	}
+	player.prototype.show = function() {
+        if(turn===0){
+            document.getElementById("graphdat").innerHTML+=this.people+"\t"+Game_Age+"<br/>";
+        }
+		this.DOM.innerHTML = "HIA";
+		this.DOM.innerHTML = this.name + "<hr/>";
+		if(this.state != "alive") {
+            if(document.getElementById("rdp").value===0){
+                document.getElementById("players").removeChild(players[turn].container);
+            }
+			this.DOM.innerHTML += '<span class="red">DEAD!</span>&nbsp;&nbsp;Lasted '+Game_Age+' turns';
+			players.splice(turn, 1);
+			turn--;
+			return;
+		}
+		this.DOM.innerHTML += "pop:" + this.people + "<br/>";
+		this.DOM.innerHTML += "<em>resources:</em><br/>";
+		this.DOM.innerHTML += "metal:" + this.metal + "<br/>";
+		this.DOM.innerHTML += "wood:" + this.wood + "<br/>";
+		if(this.food < 0) {
+			this.DOM.innerHTML += "food:0<br/>";
+            this.DOM.innerHTML += "Starvation Rate:"+(-this.food)+"<br/>";
+		} else {
+			this.DOM.innerHTML += "food:" + this.food + "<br/>";
+		}
+	}
+
+	function addPlayer() {
+		pn++;
+		var alied = confirm("AI Faction?");
+		var name, people;
+		if(alied) {
+			name = "";
+			people = d(50);
+		} else {
+			name = prompt("name");
+			people = Number(prompt("people"));
+		}
+		var techAge = d(6);
+		players.push(new player(name, people, techAge, alied));
+	}
+
+	function addBots() {
+		var pl = players.length
+		for(var i = pl; i < Number(document.getElementById("botn").value) + pl; i++) {
+			players.push(new player("Player " + i, 1000, 0, true));
+		}
+	}
+    function ct(){
+        Game_Age++;
+        document.getElementById("turnn").innerHTML=Game_Age;
+        calcturn();
+    }
+	//players.push(new player("Ian",50,0,false));
+	function calcturn() {
+		if(players.legth < 1) {
+			alert("there needs to be atlease 1 living player to take a turn");
+			return;
+		}
+		document.getElementById("nextButton").disabled = true;
+		document.getElementById("turnInfo").innerHTML = "its " + players[turn].name + "'s turn!";
+		var p = players[turn];
+		if(p.AI) {
+			p.tasks.defend = Math.round(p.people / 8);
+			p.tasks.forage = Math.round(p.people / 8);
+			p.tasks.farm = p.people - p.tasks.defend - p.tasks.forage;
+            if(p.food<=0){
+                p.tasks.defend=0;
+                p.tasks.forage=0;
+                p.tasks.farm=p.people;
+            }
+			contin = 3;
+			waitAssign();
+		} else {
+			document.getElementById("turnPhase").innerHTML = "Phase:assign";
+			document.getElementById("turnData").innerHTML = 'forage:<span id=forage></span><br/>defend:<input id=defend type=number value=0 class="small"><br/>farm:<input id=farm type=number value=0 class="small">';
+			contin = 0;
+			waitAssign();
+		}
+	}
+	var pc
+
+	function cont() {
+		contin++;
+		console.log(contin,players.length);
+	}
+
+	function waitAssign() {
+		if(!players[turn].AI) {
+			var a = 0;
+			a += Number(document.getElementById("defend").value);
+			a += Number(document.getElementById("farm").value);
+			document.getElementById("forage").innerHTML = players[turn].people - a;
+		}
+		if(contin > 0) {
+			if(!players[turn].AI) {
+				players[turn].tasks.farm = Number(document.getElementById("farm").value);
+				players[turn].tasks.forage = Number(document.getElementById("forage").innerHTML);
+				players[turn].tasks.defend = Number(document.getElementById("defend").value);
+			}
+			pc = d(100);
+			dis = d(100);
+			dism = d(75);
+            gained = Math.round(((players[turn].people - (players[turn].people % 2)) / 2)*(pc/100));
+			waitRepop();
+		} else {
+			window.requestAnimationFrame(waitAssign);
+		}
+	}
+
+	function waitRepop() {
+		document.getElementById("turnPhase").innerHTML = "Phase:populate";
+		document.getElementById("turnData").innerHTML = "";
+		document.getElementById("turnData").innerHTML += 'SR:' + pc + "%<br/>";
+		document.getElementById("turnData").innerHTML += "gained:" + gained;
+		if(dis > 95) {
+			document.getElementById("turnData").innerHTML += "Disaster:" + dism + "<br/>";
+			document.getElementById("turnData").innerHTML += "Population loss:" + Math.round(players[turn].people * (dism / 100));
+		}
+		if(contin > 1) {
+			if(dis > 95) {
+				console.log(turn + ":" + players[turn].people + "->" + (players[turn].people - Math.round(players[turn].people * (dism / 100))));
+				players[turn].people -= Math.round(players[turn].people * (dism / 100));
+			}
+			players[turn].people += d(gained*(pc/100));//---------
+			players[turn].wood += d(players[turn].tasks.forage * Number(document.getElementById("resourcerate").value));
+			players[turn].metal += d(players[turn].tasks.forage * Number(document.getElementById("resourcerate").value));
+			players[turn].food += d(players[turn].tasks.farm * 1 * Number(document.getElementById("resourcerate").value));
+            //players[turn].food += d(players[turn].tasks.farm * 3);
+			players[turn].food -= players[turn].people;
+			if(players[turn].food < 0) {
+				players[turn].people += players[turn].food;
+			}
+			if(players[turn].people < 0) {
+				players[turn].state = "DEAD";
+			}
+            
+			players[turn].show();
+			turn++;
+			contin = 0;
+			document.getElementById("nextButton").disabled = false;
+			document.getElementById("turnData").innerHTML = "";
+			if(turn > players.length - 1) {
+				turn = 0;
+                console.log(contin,players.length);
+			} else {
+				calcturn();
+			}
+		} else {
+			window.requestAnimationFrame(waitRepop);
+		}
+	}
+	</script>
+</body>
+
+</html>
