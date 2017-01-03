@@ -71,7 +71,7 @@
       			</td>
       <td valign="top">
         <h1>ADVANCED</h1>
-        <button onClick="addBots();">add AI's</button> <input type=number value=1 id=botn class="short"></input> disasters:<select id="disasters" value=0>
+        <button onClick="addBots();">add AI's</button> <input type=number value=1 id=botn class="short"> disasters:<select id="disasters" value=0>
         <option value=0>YES</option>
         <option value=1>NO</option>
         </select> <br/> auto Population:<select id="popRecalc" value=0>
@@ -85,9 +85,9 @@
         <option value=0>YES</option>
         <option value=1>NO</option>
         </select>
-        </select> resourceRate: <input id=resourcerate class="small" type=number min=0 max=999999 value=3></input>
+		resourceRate: <input id=resourcerate class="small" type=number min=0 max=999999 value=3>
 				<hr/>
-				<h3>RESOURCES</h3> wood:<input type=number value=10 class="small" id=wood></input> <br/> metal: <input type=number value=10 class="small" id=metal></input> <br/> food: <input type=number value=1 class="small" id=food></input>
+				<h3>RESOURCES</h3> wood:<input type=number value=10 class="small" id=wood> <br/> metal: <input type=number value=10 class="small" id=metal> <br/> food: <input type=number value=1 class="small" id=food>
 			</td>
 		</tr>
 	</table>
@@ -101,7 +101,7 @@
 	var dis = 0;
 	var dism = 0;
     var gained = 0;
-    
+    	
 	function inp(label, type, val) {
 		var s = document.createElement("span");
 		s.append(label);
@@ -135,6 +135,7 @@
 		this.cost = {};
 		this.cost.wood = inp("CC wood:", "number", 0);
 		this.cost.metal = inp("CC metal:", "number", 0);
+		this.base = {};
 		var u = document.createElement("DIV");
 		var t = document.createElement("DIV");
 		t.setAttribute("class", "player");
@@ -149,6 +150,9 @@
 		this.DOM = u;
 		this.container = t;
 		this.show();
+	}
+	player.prototype.getBaseData = function(){
+		return "https://teak1cd.github.io/wop/battleRender.html/?"+JSON.stringify(this.base);
 	}
 	player.prototype.show = function() {
         if(turn===0){
@@ -169,6 +173,7 @@
 		this.DOM.innerHTML += "<em>resources:</em><br/>";
 		this.DOM.innerHTML += "metal:" + this.metal + "<br/>";
 		this.DOM.innerHTML += "wood:" + this.wood + "<br/>";
+		this.DOM.innerHTML += "battle:<a href=\""+this.getBaseData+"\">goto base</a><br/>";
 		if(this.food < 0) {
 			this.DOM.innerHTML += "food:0<br/>";
             this.DOM.innerHTML += "Starvation Rate:"+(-this.food)+"<br/>";
