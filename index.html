@@ -91,7 +91,6 @@
 			</td>
 		</tr>
 	</table>
-    <div id=graphdat></div>
 	<script>
     var Game_Age = 1;
 	var players = [];
@@ -173,7 +172,7 @@
 		this.DOM.innerHTML += "<em>resources:</em><br/>";
 		this.DOM.innerHTML += "metal:" + this.metal + "<br/>";
 		this.DOM.innerHTML += "wood:" + this.wood + "<br/>";
-		this.DOM.innerHTML += "battle:<a href=\""+this.getBaseData()+"\">goto base</a><br/>";
+		this.DOM.innerHTML += "battle:<a href=\""+this.getBaseData()+"\ target=\"_blank\"">goto base</a><br/>";
 		if(this.food < 0) {
 			this.DOM.innerHTML += "food:0<br/>";
             this.DOM.innerHTML += "Starvation Rate:"+(-this.food)+"<br/>";
@@ -210,7 +209,7 @@
     }
 	//players.push(new player("Ian",50,0,false));
 	function calcturn() {
-		if(players.legth < 1) {
+		if(players.length < 1) {
 			alert("there needs to be atlease 1 living player to take a turn");
 			return;
 		}
