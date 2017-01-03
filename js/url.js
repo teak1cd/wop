@@ -1,16 +1,6 @@
-function LE(){
-  return this;
+function get(){
+  return new Object(JSON.parse( decodeURI(window.location.href.split("?")[1])));
 }
-LE.prototype=Object.assign(LE.prototype,{
-  get(){
-    this = new URL();
-    var loc = window.location.split("?").shift();
-    var data = loc.split(",");
-    for(var i = 0;i<data.length;i++){
-      var variable = data[i].split(":");
-      eval("function _gd(){return "+variable[1]+"}");
-      this[variable[0]]=_gd();
-    }
-    return this;
-  }
-});
+function set(object){
+  window.location = window.location.origin+""+window.location.pathname+"?"+JSON.stringify(object);
+}
